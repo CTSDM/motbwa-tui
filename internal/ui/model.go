@@ -17,6 +17,7 @@ const (
 	initView
 	loginView
 	chatView
+	addContactView
 )
 
 type model struct {
@@ -27,6 +28,10 @@ type model struct {
 	initList    list.Model
 	choice      string
 	assignation map[string]flowState
+
+	// contacts
+	newContact textinput.Model
+	contacts   map[string]struct{}
 
 	// login and create user components
 	focusIndex  int
@@ -65,6 +70,19 @@ Type a message and press Enter to send.`)
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 
 	return ta, vp
+}
+
+func initializeAddContactView() textinput.Model {
+	t := textinput.New()
+	t.Width = 32
+	t.Cursor.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	t.Placeholder = "Username"
+	t.CharLimit = 32
+	t.Focus()
+	t.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	t.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+	return t
 }
 
 func initializeInitView(items []string) list.Model {
@@ -129,6 +147,7 @@ func InitialModel(state api.State) model {
 
 	taChat, vpChat := initializeChatView()
 	tiCredentials := initializeCredentialsView()
+	tiContact := initializeAddContactView()
 	initList := initializeInitView(items)
 
 	return model{
@@ -139,6 +158,10 @@ func InitialModel(state api.State) model {
 		// login and create user
 		credentials: tiCredentials,
 		assignation: assignation,
+
+		// new contact
+		newContact: tiContact,
+		contacts:   make(map[string]struct{}),
 
 		//chat
 		textarea:    taChat,

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -26,7 +27,7 @@ func (s *State) HandlerCreateUser(ctx context.Context, username, password string
 	}
 
 	// create and make the request
-	url := s.Server.BaseURL + s.Server.CreateUser
+	url := s.Server.BaseURL + s.Server.Users
 	req, err := http.NewRequestWithContext(ctx, "POST", url, credentialsReader)
 	if err != nil {
 		return err
@@ -41,6 +42,30 @@ func (s *State) HandlerCreateUser(ctx context.Context, username, password string
 
 	if res.StatusCode != 201 {
 		return fmt.Errorf("could not create the user on endpoint %s: %v", url, res.StatusCode)
+	}
+
+	return nil
+}
+
+func (s *State) HandlerCheckUserExists(ctx context.Context, username string) error {
+	if len(username) == 0 {
+		return errors.New("the username cannot be empty")
+	}
+
+	url := s.Server.BaseURL + s.Server.Users + "/" + username
+	req, err := http.NewRequestWithContext(ctx, "GET", url, bytes.NewReader([]byte{}))
+	if err != nil {
+		return err
+	}
+	s.AddAuthTokensToHeader(&req.Header)
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != 200 {
+		return fmt.Errorf("code status different from 200: %v", res.StatusCode)
 	}
 
 	return nil

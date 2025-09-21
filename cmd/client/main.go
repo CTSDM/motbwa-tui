@@ -25,7 +25,7 @@ func main() {
 			BaseURL:      fmt.Sprintf("http://localhost:%s/", PORT_NUMBER),
 			WebsocketURL: fmt.Sprintf("ws://localhost:%s/ws", PORT_NUMBER),
 			Login:        "api/login",
-			CreateUser:   "api/users",
+			Users:        "api/users",
 		},
 	}
 

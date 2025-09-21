@@ -36,6 +36,19 @@ func (m model) View() string {
 			gap,
 			m.textarea.View(),
 		)
+
+	case addContactView:
+		var b strings.Builder
+		b.WriteString(m.newContact.View())
+		b.WriteRune('\n')
+
+		if m.loginError != "" {
+			b.WriteString(m.loginError)
+			b.WriteRune('\n')
+		}
+
+		return b.String()
 	}
+
 	return "something went wrong..."
 }

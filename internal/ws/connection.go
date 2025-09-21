@@ -13,7 +13,7 @@ import (
 
 func CreateConnection(s api.State) (*ClientManager, error) {
 	header := make(http.Header)
-	header["Auth"] = []string{"Bearer " + s.User.Token}
+	s.AddAuthTokensToHeader(&header)
 
 	conn, _, err := websocket.DefaultDialer.Dial(s.Server.WebsocketURL, header)
 	if err != nil {

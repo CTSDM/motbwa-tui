@@ -1,6 +1,10 @@
 package api
 
-import "github.com/google/uuid"
+import (
+	"net/http"
+
+	"github.com/google/uuid"
+)
 
 type State struct {
 	User   UserInfo
@@ -18,5 +22,10 @@ type ServerInfo struct {
 	BaseURL      string
 	WebsocketURL string
 	Login        string
-	CreateUser   string
+	Users        string
+}
+
+func (s State) AddAuthTokensToHeader(header *http.Header) {
+	header.Set("Auth", "Bearer "+s.User.Token)
+	header.Set("X-Refresh-Token", "Token "+s.User.RefreshToken)
 }

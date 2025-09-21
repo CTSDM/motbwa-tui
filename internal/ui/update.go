@@ -39,6 +39,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, cmd
 
+	case addContactView:
+		cmd := m.updateContact(msg)
+		return m, cmd
+
 	case chatView:
 		var (
 			tiChatCmd tea.Cmd
@@ -66,6 +70,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyMsg:
 			switch msg.Type {
+			case tea.KeyCtrlA:
+				m.flow = addContactView
+				return m, nil
+
 			case tea.KeyCtrlC:
 				m.client.Close()
 				fmt.Println(m.textarea.Value())
@@ -132,6 +140,42 @@ func (m *model) updateInitView(msg tea.Msg) tea.Cmd {
 
 	var cmd tea.Cmd
 	m.initList, cmd = m.initList.Update(msg)
+	return cmd
+}
+
+func (m *model) updateContact(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		m.loginError = ""
+		switch msg.Type {
+		case tea.KeyEnter:
+			contactName := m.newContact.Value()
+			// user cannot add its own username to the contactlist
+			// user can only add other user only once
+			if contactName == m.state.User.Username {
+				m.loginError = "Cannot add yourself to your contact list"
+				return nil
+			}
+			if _, ok := m.contacts[contactName]; ok {
+				m.loginError = "User already in contact list"
+				return nil
+			}
+			if err := m.state.HandlerCheckUserExists(context.Background(), contactName); err != nil {
+				m.loginError = err.Error()
+				return nil
+			}
+			m.contacts[contactName] = struct{}{}
+			m.newContact.Reset()
+			m.flow = chatView
+			return nil
+		case tea.KeyCtrlB:
+			m.flow = chatView
+			return nil
+		}
+	}
+
+	var cmd tea.Cmd
+	m.newContact, cmd = m.newContact.Update(msg)
 	return cmd
 }
 
